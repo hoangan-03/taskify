@@ -2,15 +2,23 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Task, Project, User, Comment, Event, Message, Attachment } from '../models/task.model';
+import {
+  Task,
+  Project,
+  User,
+  Comment,
+  Event,
+  Message,
+  Attachment,
+} from '../models/task.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TaskService {
   // private baseUrl = 'http://localhost:5187';
-  private baseUrl = environment.BASE_URL;
+  private baseUrl = environment.baseUrl;
   private taskUrl = this.baseUrl + '/api/tasks';
   private projectUrl = this.baseUrl + '/api/projects';
   private userUrl = this.baseUrl + '/api/users';
@@ -48,12 +56,19 @@ export class TaskService {
     return this.http.get<any>(`${this.userUrl}/${id}`);
   }
 
-  getMessagesBetweenUsers(userId1: number, userId2: number): Observable<Message[]> {
-    return this.http.get<Message[]>(`${this.messageUrl}/between/${userId1}/${userId2}`).pipe(
-      map((response: any) => resolveReferences(response))
-    );
+  getMessagesBetweenUsers(
+    userId1: number,
+    userId2: number
+  ): Observable<Message[]> {
+    return this.http
+      .get<Message[]>(`${this.messageUrl}/between/${userId1}/${userId2}`)
+      .pipe(map((response: any) => resolveReferences(response)));
   }
-  addMessage(message: { messageText: string, senderId: number, receiverId: number }): Observable<Message> {
+  addMessage(message: {
+    messageText: string;
+    senderId: number;
+    receiverId: number;
+  }): Observable<Message> {
     return this.http.post<Message>(this.messageUrl, message);
   }
 }
