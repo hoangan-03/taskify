@@ -1,84 +1,39 @@
-import { EventUser } from '../../models/task.model';
-import { Component } from '@angular/core';
-import { MatIconModule } from '@angular/material/icon';
-import { Router } from '@angular/router';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { FormControl, Validators } from '@angular/forms';
-import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { JsonPipe } from '@angular/common';
-import { ChangeDetectorRef } from '@angular/core';
-import { ChangeDetectionStrategy, inject, model } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatRadioModule } from '@angular/material/radio';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { FormFieldComponent } from '../../../components/form-field/app-form-field.component';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { MatInputModule } from '@angular/material/input';
+import { MatDatepicker } from '@angular/material/datepicker';
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
-import {
-  MatAutocompleteModule,
-  MatAutocompleteSelectedEvent,
-} from '@angular/material/autocomplete';
-import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
-import { InfoIconComponent } from '../../../components/info-icon/info-icon.component';
 import { HttpClient } from '@angular/common/http';
+import { MaterialModule } from '../../../shared';
+import { InfoIconComponent } from '../../../components';
 import { TaskService } from '../../services/task.service';
 import { environment } from '../../../../environments/environment';
-import {
-  AttachmentType,
-  CommentState,
-  Comment,
-  Project,
-  User,
-  Event,
-  Color,
-  Task,
-} from '../../models/task.model';
-import { MatDatepicker } from '@angular/material/datepicker';
-import { MatTooltipModule } from '@angular/material/tooltip';
-
+import { User, Event, Color, Task } from '../../models/task.model';
 
 @Component({
   selector: 'app-side-nav',
   standalone: true,
   imports: [
-    MatIconModule,
-    ReactiveFormsModule,
     CommonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatSelectModule,
     FormsModule,
-    MatCheckboxModule,
-    JsonPipe,
-    MatDatepickerModule,
-    MatCardModule,
-    MatRadioModule,
-    MatInputModule,
-    FormFieldComponent,
-    MatChipsModule,
-    MatAutocompleteModule,
+    ReactiveFormsModule,
+    MaterialModule,
     InfoIconComponent,
     NgxMaterialTimepickerModule,
     MatDatepicker,
-    MatTooltipModule
   ],
   templateUrl: './calendar.component.html',
   providers: [provideNativeDateAdapter(), DatePipe],
 })
 export class CalendarComponent {
-  
-  baseUrl = environment.BASE_URL;
+  baseUrl = environment.baseUrl;
   constructor(
     private http: HttpClient,
     private taskService: TaskService,
     private cdr: ChangeDetectorRef,
     private datePipe: DatePipe
-  ) { }
+  ) {}
   hoveredEvent: any = null;
   events: Event[] = [];
   weeks: { start: Date; end: Date }[] = [];
@@ -105,9 +60,7 @@ export class CalendarComponent {
   showModal: boolean = false;
   currentDate: Date = new Date();
   currentHour: string = '';
-  monthControl = new FormControl(new Date(2024, 0, 1)); 
-
-
+  monthControl = new FormControl(new Date(2024, 0, 1));
 
   openModal(date: Date, hour: string) {
     this.showModal = true;
@@ -126,29 +79,31 @@ export class CalendarComponent {
   async submitForm() {
     try {
       const selectedColor = this.getColorEnumValue(this.taskColorControl);
-      function convertTo24HourFormat(timeControl: FormControl<string | null> | string | null): string {
+      function convertTo24HourFormat(
+        timeControl: FormControl<string | null> | string | null
+      ): string {
         let time: string | null;
         if (timeControl instanceof FormControl) {
           time = timeControl.value;
         } else {
           time = timeControl;
         }
-      
+
         if (!time) {
           return '00:00:00';
         }
-      
+
         const [timePart, modifier] = time.split(' ');
         let [hours, minutes] = timePart.split(':');
-      
+
         if (hours === '12') {
           hours = '00';
         }
-      
+
         if (modifier === 'PM') {
           hours = (parseInt(hours, 10) + 12).toString();
         }
-      
+
         return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`;
       }
       const formData = {
@@ -170,7 +125,7 @@ export class CalendarComponent {
         next: (response) => {
           this.closeModal();
           this.fetchEvents();
-          console.log('Response:', formData)
+          console.log('Response:', formData);
         },
         error: (error) => {
           console.error('Error:', error);
@@ -260,15 +215,15 @@ export class CalendarComponent {
     );
   }
   getEventUsersNames(eventUsers: any[]): string {
-    console.log("The event users", eventUsers)
+    console.log('The event users', eventUsers);
     if (!eventUsers) {
       return '';
     }
-    return eventUsers.map(user => user.fullName).join(', ');
+    return eventUsers.map((user) => user.fullName).join(', ');
   }
   getAssignerNameById(id: number): string {
-    const user = this.usersList.find(user => user.userId === id);
-    console.log("The user", user?.fullName)
+    const user = this.usersList.find((user) => user.userId === id);
+    console.log('The user', user?.fullName);
     return user ? user.fullName : 'Unknown';
   }
 
@@ -284,13 +239,13 @@ export class CalendarComponent {
   }
   getFullDayName(dayAbbreviation: string): string {
     const dayMap: { [key: string]: string } = {
-      'Mon': 'Monday',
-      'Tue': 'Tuesday',
-      'Wed': 'Wednesday',
-      'Thu': 'Thursday',
-      'Fri': 'Friday',
-      'Sat': 'Saturday',
-      'Sun': 'Sunday'
+      Mon: 'Monday',
+      Tue: 'Tuesday',
+      Wed: 'Wednesday',
+      Thu: 'Thursday',
+      Fri: 'Friday',
+      Sat: 'Saturday',
+      Sun: 'Sunday',
     };
     return dayMap[dayAbbreviation] || dayAbbreviation;
   }
@@ -348,9 +303,30 @@ export class CalendarComponent {
     { day: 7, name: 'Sun', date: new Date() },
   ];
   hours: string[] = [
-    '00:00:00', '01:00:00', '02:00:00', '03:00:00', '04:00:00', '05:00:00', '06:00:00', '07:00:00',
-    '08:00:00', '09:00:00', '10:00:00', '11:00:00', '12:00:00', '13:00:00', '14:00:00', '15:00:00',
-    '16:00:00', '17:00:00', '18:00:00', '19:00:00', '20:00:00', '21:00:00', '22:00:00', '23:00:00',
+    '00:00:00',
+    '01:00:00',
+    '02:00:00',
+    '03:00:00',
+    '04:00:00',
+    '05:00:00',
+    '06:00:00',
+    '07:00:00',
+    '08:00:00',
+    '09:00:00',
+    '10:00:00',
+    '11:00:00',
+    '12:00:00',
+    '13:00:00',
+    '14:00:00',
+    '15:00:00',
+    '16:00:00',
+    '17:00:00',
+    '18:00:00',
+    '19:00:00',
+    '20:00:00',
+    '21:00:00',
+    '22:00:00',
+    '23:00:00',
   ];
   saveCurrentWeekIndex(): void {
     localStorage.setItem('currentWeekIndex', this.currentWeekIndex.toString());
@@ -362,19 +338,32 @@ export class CalendarComponent {
       if (storedIndex !== null) {
         this.currentWeekIndex = parseInt(storedIndex, 10);
       }
-    } 
+    }
   }
   selectMonth(): void {
-    const monthPicker = document.querySelector('.month-picker .mat-datepicker-toggle') as HTMLElement;
+    const monthPicker = document.querySelector(
+      '.month-picker .mat-datepicker-toggle'
+    ) as HTMLElement;
     if (monthPicker) {
       monthPicker.click();
     }
   }
 
-  chosenMonthHandler(normalizedMonth: Date, datepicker: MatDatepicker<Date>): void {
-    const firstDayOfMonth = new Date(normalizedMonth.getFullYear(), normalizedMonth.getMonth(), 1);
-    const lastDayOfMonth = new Date(normalizedMonth.getFullYear(), normalizedMonth.getMonth() + 1, 0);
-  
+  chosenMonthHandler(
+    normalizedMonth: Date,
+    datepicker: MatDatepicker<Date>
+  ): void {
+    const firstDayOfMonth = new Date(
+      normalizedMonth.getFullYear(),
+      normalizedMonth.getMonth(),
+      1
+    );
+    const lastDayOfMonth = new Date(
+      normalizedMonth.getFullYear(),
+      normalizedMonth.getMonth() + 1,
+      0
+    );
+
     this.weeks = [];
     let current = firstDayOfMonth;
     while (current <= lastDayOfMonth) {
@@ -384,7 +373,7 @@ export class CalendarComponent {
       this.weeks.push({ start: weekStart, end: weekEnd });
       current.setDate(current.getDate() + 7);
     }
-  
+
     this.currentWeekIndex = 0;
     this.saveCurrentWeekIndex();
     this.monthControl.setValue(normalizedMonth);

@@ -1,41 +1,33 @@
-import { TaskState } from '../../models/task.model';
-import { CommonModule, DatePipe } from '@angular/common';
-import { MatIconModule } from '@angular/material/icon';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatDialogModule } from '@angular/material/dialog';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatSelectModule } from '@angular/material/select';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { JsonPipe } from '@angular/common';
-import { ChangeDetectorRef } from '@angular/core';
-import { DragDropModule } from '@angular/cdk/drag-drop';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import {
-  ChangeDetectionStrategy,
   Component,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
   inject,
   model,
+  computed,
+  signal,
 } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
-import { MatRadioModule } from '@angular/material/radio';
+import { CommonModule, DatePipe } from '@angular/common';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatInputModule } from '@angular/material/input';
-import { TaskItemComponent } from '../../../components/task-item/task-item.component';
-import { FormFieldComponent } from '../../../components/form-field/app-form-field.component';
+import {
+  DragDropModule,
+  CdkDragDrop,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { computed, signal } from '@angular/core';
-import {
-  MatAutocompleteModule,
-  MatAutocompleteSelectedEvent,
-} from '@angular/material/autocomplete';
-import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
-import { InfoIconComponent } from '../../../components/info-icon/info-icon.component';
 import { HttpClient } from '@angular/common/http';
 import { TaskService } from '../../services/task.service';
+import { environment } from '../../../../environments/environment';
 import {
+  TaskState,
   Task,
   AttachmentType,
   CommentState,
@@ -43,41 +35,21 @@ import {
   Project,
   User,
 } from '../../models/task.model';
-import { environment } from '../../../../environments/environment';
-import { MatTabsModule } from '@angular/material/tabs';
-import { UpdateTaskModalComponent } from '../../../components/update-task-modal/update-task-modal.component';
-import { AddTaskModalComponent } from '../../../components/add-task-modal/add-task-modal.component';
-
-
-
-
+import { TaskItemComponent, UpdateTaskModalComponent, AddTaskModalComponent } from '../../../components';
+import {MaterialModule, MatAutocompleteSelectedEvent, MatChipInputEvent } from '../../../shared/material.module';
 
 @Component({
   selector: 'app-todo',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
     CommonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatSelectModule,
     FormsModule,
-    MatCheckboxModule,
-    JsonPipe,
-    MatDatepickerModule,
-    MatCardModule,
-    MatRadioModule,
-    MatInputModule,
-    FormFieldComponent,
-    TaskItemComponent,
-    MatChipsModule,
-    MatAutocompleteModule,
-    InfoIconComponent,
+    ReactiveFormsModule,
+    MaterialModule,
     DragDropModule,
-    MatTabsModule,
+    TaskItemComponent,
     UpdateTaskModalComponent,
     AddTaskModalComponent,
-    MatDialogModule
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [provideNativeDateAdapter(), DatePipe],
@@ -91,7 +63,7 @@ export class TodoComponent {
     private taskService: TaskService,
     private cdr: ChangeDetectorRef,
     private datePipe: DatePipe
-  ) { }
+  ) {}
   readonly announcer = inject(LiveAnnouncer);
   readonly separatorKeysCodes: number[] = [ENTER, COMMA];
   readonly currentTag = model('');
@@ -202,7 +174,9 @@ export class TodoComponent {
 
   applyFilters(): void {
     this.filteredTasks = this.filterTasks(this.sortTasks(this.tasks));
-    this.filteredTasksAssignedToCurrentUser = this.filterTasks(this.sortTasks(this.tasksAssignedToCurrentUser));
+    this.filteredTasksAssignedToCurrentUser = this.filterTasks(
+      this.sortTasks(this.tasksAssignedToCurrentUser)
+    );
     this.cdr.detectChanges();
   }
 
@@ -299,7 +273,7 @@ export class TodoComponent {
   categoryControl = new FormControl('', [Validators.required]);
   tagControl = new FormControl('', [Validators.required]);
   showModal: boolean = false;
-  baseUrl = environment.BASE_URL;
+  baseUrl = environment.baseUrl;
   isInfoBoxVisible: boolean = false;
   isInfoBox2Visible: boolean = false;
   isInfoBox3Visible: boolean = false;
@@ -316,7 +290,7 @@ export class TodoComponent {
   showProjectModal = false;
   projectForm = new FormGroup({
     title: new FormControl('', Validators.required),
-    description: new FormControl('')
+    description: new FormControl(''),
   });
 
   openProjectModal(): void {
@@ -330,10 +304,10 @@ export class TodoComponent {
   submitProjectForm(): void {
     if (this.projectForm.valid) {
       const newProject = {
-        title: this.projectForm.value.title ?? '', 
-        description: this.projectForm.value.description ?? '', 
+        title: this.projectForm.value.title ?? '',
+        description: this.projectForm.value.description ?? '',
         createAt: new Date().toISOString(),
-        tasks: [] 
+        tasks: [],
       };
       this.http.post(`${this.baseUrl}/api/projects`, newProject).subscribe({
         next: (project) => {
@@ -342,7 +316,7 @@ export class TodoComponent {
         },
         error: (error) => {
           console.error('Error creating project:', error);
-        }
+        },
       });
     }
   }
@@ -361,11 +335,12 @@ export class TodoComponent {
     this.fetchProjectGroups();
     this.fetchUsers();
     this.fetchComments();
-
   }
   filterTasksAssignedToCurrentUser(): void {
     if (this.currentUser) {
-      this.tasksAssignedToCurrentUser = this.tasks.filter(task => task.assigneeId === this.currentUser!.userId);
+      this.tasksAssignedToCurrentUser = this.tasks.filter(
+        (task) => task.assigneeId === this.currentUser!.userId
+      );
     }
   }
   loadCurrentUser(): void {
@@ -662,13 +637,13 @@ export class TodoComponent {
     this.saveTaskOrder();
   }
   getAssigneeNameById(id: number): string {
-    const user = this.Users.find(user => user.userId === id);
-    console.log("The user", user?.fullName)
+    const user = this.Users.find((user) => user.userId === id);
+    console.log('The user', user?.fullName);
     return user ? user.fullName : 'Unknown';
   }
   getAssignerNameById(id: number): string {
-    const user = this.Users.find(user => user.userId === id);
-    console.log("The user", user?.fullName)
+    const user = this.Users.find((user) => user.userId === id);
+    console.log('The user', user?.fullName);
     return user ? user.fullName : 'Unknown';
   }
   saveTaskOrder() {
@@ -837,7 +812,6 @@ export class TodoComponent {
             this.selectedTask = null;
           }
           this.fetchTasks();
-
         },
         (error) => {
           console.error('Error deleting task:', error);

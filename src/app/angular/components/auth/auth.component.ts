@@ -1,17 +1,23 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { environment } from '../../../../environments/environment';
 declare const google: any;
 export function fullNameValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const value = control.value;
     if (!value) {
-      return null; 
+      return null;
     }
     const isValid = /^[a-zA-Z]+ [a-zA-Z]+$/.test(value);
     return isValid ? null : { fullNameInvalid: true };
@@ -22,27 +28,27 @@ export function fullNameValidator(): ValidatorFn {
   selector: 'app-auth',
   templateUrl: './auth.component.html',
   standalone: true,
-  imports: [
-    ReactiveFormsModule,
-    FormsModule, 
-    CommonModule,
-  ],
+  imports: [ReactiveFormsModule, FormsModule, CommonModule],
 })
 export class AuthComponent implements OnInit {
   loginForm: FormGroup;
   registerForm: FormGroup;
   isLoginView: boolean = true;
 
-  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
     this.registerForm = this.fb.group({
       fullname: ['', [Validators.required, fullNameValidator()]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
@@ -51,7 +57,6 @@ export class AuthComponent implements OnInit {
   }
 
   ngOnInit(): void {
-
     this.initializeGoogleSignIn();
   }
 
@@ -63,9 +68,9 @@ export class AuthComponent implements OnInit {
           console.log('Login successful', response);
           localStorage.setItem('user', JSON.stringify(response));
           this.router.navigate(['/angular/todo']);
-          alert("Login successful");
+          alert('Login successful');
         },
-        error => {
+        (error) => {
           console.error('Login failed', error);
         }
       );
@@ -74,14 +79,14 @@ export class AuthComponent implements OnInit {
 
   onRegisterSubmit() {
     if (this.registerForm.valid) {
-      const {fullname, email, password } = this.registerForm.value;
-      console.log("register",this.registerForm.value);
-      this.authService.register(fullname,email, password).subscribe(
+      const { fullname, email, password } = this.registerForm.value;
+      console.log('register', this.registerForm.value);
+      this.authService.register(fullname, email, password).subscribe(
         (response: any) => {
           this.toggleView();
-          alert("Registration successful");
+          alert('Registration successful');
         },
-        error => {
+        (error) => {
           console.error('Registration failed', error);
         }
       );
@@ -91,7 +96,10 @@ export class AuthComponent implements OnInit {
     console.log('Prompting Google Sign-In');
     google.accounts.id.prompt((notification: any) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        console.error('Google Sign-In was not displayed or was skipped', notification);
+        console.error(
+          'Google Sign-In was not displayed or was skipped',
+          notification
+        );
       }
     });
   }
@@ -99,8 +107,8 @@ export class AuthComponent implements OnInit {
   private initializeGoogleSignIn(): void {
     console.log('Initializing Google Sign-In');
     google.accounts.id.initialize({
-      client_id: environment.CLIENT_ID,
-      callback: this.handleCredentialResponse.bind(this)
+      client_id: environment.clientId,
+      callback: this.handleCredentialResponse.bind(this),
     });
   }
 
@@ -114,7 +122,7 @@ export class AuthComponent implements OnInit {
           localStorage.setItem('user', JSON.stringify(response));
           this.router.navigate(['/angular/todo']);
         },
-        error => {
+        (error) => {
           console.error('Google login failed', error);
         }
       );
